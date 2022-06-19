@@ -1,0 +1,44 @@
+#include <iostream>
+#include <string>
+#include <vector>
+
+std::vector<int> prefixFunction(std::string s) {
+    std::vector<int> p(s.size());
+    int j = 0;
+    for (int i = 1; i < s.size(); i++) {
+        while (j > 0 && s[j] != s[i])
+            j = p[j - 1];
+
+        if (s[j] == s[i])
+            ++j;
+        p[i] = j;
+    }
+    return p;
+}
+
+std::vector<int> KMP_matcher(std::string &main_string, std::string &pattern) {
+    std::string text = pattern + "%" + main_string;
+    std::vector<int> pi = prefixFunction(text);
+    std::vector<int> result;
+    for (int i = pattern.size() + 1; i < text.size(); ++i) {
+        if (pi[i] == pattern.length()) {
+            result.emplace_back(i - 2 * pattern.length());
+        }
+    }
+    return result;
+}
+
+
+int main() {
+
+    std::string pattern;
+    std::string main_string;
+    std::cin >> pattern;
+    std::cin >> main_string;
+    std::vector<int> res = KMP_matcher(main_string, pattern);
+    for (auto i:res) {
+        std::cout << i << " ";
+    }
+    std::cout << std::endl;
+    return 0;
+}
