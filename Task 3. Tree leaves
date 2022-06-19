@@ -1,0 +1,165 @@
+/// submission link: https://contest.yandex.ru/contest/38500/run-report/69036906/
+#include <functional>
+#include <iostream>
+
+template<typename T, typename Compare = std::less<T>>
+class BinaryTree {
+    class Node;
+    size_t size_;
+    Node *root_node_;
+
+public:
+    BinaryTree() {
+        size_ = 0;
+        root_node_ = nullptr;
+    };
+
+    BinaryTree(const BinaryTree &other);
+
+    BinaryTree &operator=(BinaryTree other);
+
+    ~BinaryTree() {
+        if (root_node_ != nullptr) {
+            ClearNode(root_node_);
+            root_node_ = nullptr;
+            delete root_node_;
+        } else {
+            delete root_node_;
+        }
+    }
+
+    size_t Max(size_t left, size_t right) const {
+        if (left < right) {
+            return right;
+        } else {
+            return left;
+        }
+    }
+
+    void PreOrderTraversal(Node *node, std::vector<size_t> &lengths) const {
+        if (node != nullptr) {
+            lengths.push_back(node->value);
+            PreOrderTraversal(node->left, lengths);
+            PreOrderTraversal(node->right, lengths);
+        }
+    }
+
+    bool Insert(const T &value) {
+
+        Node *node = root_node_;
+        Node *node_parent = nullptr;
+
+        while (node != nullptr) {
+            node_parent = node;
+            if (node->value == value) {
+                return false;
+            } else if (value > node->value) {
+                node = node->right;
+            } else {
+                node = node->left;
+            }
+        }
+
+        node = new Node();
+        node->value = value;
+        node->parent = node_parent;
+        size_++;
+
+        if (node_parent != nullptr) {
+
+            if (node_parent->value > node->value) {
+                node_parent->left = node;
+            } else {
+                node_parent->right = node;
+            }
+
+            return true;
+        }
+        root_node_ = node;
+        return true;
+    }
+
+    std::vector<T> Leaves() {
+        std::vector<T> elements;
+        InOrderTraversal(root_node_, elements);
+        return elements;
+    }
+
+    void InOrderTraversal(Node *root, std::vector<int> &elements) {
+        if (root != nullptr) {
+            InOrderTraversal(root->left, elements);
+            if (root->left == nullptr && root->right == nullptr) {
+                elements.push_back(root->value);
+            }
+            InOrderTraversal(root->right, elements);
+        }
+    }
+
+    Node *FindNode(const T &value) {
+        if (size_ == 0) {
+            return nullptr;
+        }
+        Node *temp = root_node_;
+        while (true) {
+            if (value > temp->value && temp->right != nullptr) {
+                temp = temp->right;
+            } else if (value < temp->value && temp->left != nullptr) {
+                temp = temp->left;
+            } else if (temp->value == value) {
+                return temp;
+            } else {
+                return nullptr;
+            }
+        }
+    }
+
+
+    void ClearNode(Node *node) {
+        if (node != nullptr) {
+            ClearNode(node->left);
+            ClearNode(node->right);
+            delete node;
+        }
+    }
+
+private:
+    class Node {
+    public:
+        Node() {
+            parent = nullptr;
+            left = nullptr;
+            right = nullptr;
+        }
+
+        T value;
+
+        Node *parent = nullptr;
+        Node *left = nullptr;
+        Node *right = nullptr;
+    };
+};
+
+
+
+void ReadAndImplement(BinaryTree<int> &binarytree) {
+
+    while (true) {
+
+        int element = 0;
+        std::cin >> element;
+        if (element == 0) {
+            break;
+        }
+        binarytree.Insert(element);
+    }
+    std::vector<int> leaves = binarytree.Leaves();
+    for (auto &x: leaves) {
+        std::cout << x << " ";
+    }
+}
+
+int main() {
+    BinaryTree<int> tree;
+    ReadAndImplement(tree);
+    return 0;
+}
