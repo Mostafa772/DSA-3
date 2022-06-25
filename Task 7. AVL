@@ -1,0 +1,185 @@
+task submission: https://contest.yandex.ru/contest/38500/run-report/69186908
+#include <iostream>
+#include <vector>
+
+class Node {
+public:
+    int key;
+    Node *left;
+    Node *right;
+    int depth;
+};
+
+int depth(Node *node) {
+    if (node == nullptr)
+        return 0;
+    return node->depth;
+}
+
+Node *new_node(int key) {
+    Node *node = new Node();
+    node->key = key;
+    node->left = nullptr;
+    node->right = nullptr;
+    node->depth = 1;
+    return (node);
+}
+
+Node *right_rotation(Node *node) {
+    Node *temp = node->left;
+    Node *temp_two = temp->right;
+
+    temp->right = node;
+    node->left = temp_two;
+
+    node->depth = std::max(depth(node->left),
+                      depth(node->right)) +
+                  1;
+    temp->depth = std::max(depth(temp->left),
+                      depth(temp->right)) +
+                  1;
+
+    return temp;
+}
+
+Node *left_rotation(Node *node) {
+    Node *temp = node->right;
+    Node *temp_two = temp->left;
+
+    temp->left = node;
+    node->right = temp_two;
+
+    node->depth = std::max(depth(node->left),
+                      depth(node->right)) +
+                  1;
+    temp->depth = std::max(depth(temp->left),
+                      depth(temp->right)) +
+                  1;
+
+    return temp;
+}
+
+int get_balance(Node *node) {
+    if (node == nullptr)
+        return 0;
+    return depth(node->left) -
+           depth(node->right);
+}
+
+Node *add(Node *node, int key, int &counter) {
+    if (node == nullptr)
+        return (new_node(key));
+
+    if (key < node->key)
+        node->left = add(node->left, key, counter);
+    else if (key > node->key)
+        node->right = add(node->right, key, counter);
+
+    else {
+        ++counter;
+        return node;
+    }
+    ///update height of ancestor node
+    node->depth = 1 + std::max(depth(node->left), depth(node->right));
+
+    int balance = get_balance(node);
+
+    /// Left Left Case
+    if (balance > 1 && key < node->left->key)
+        return right_rotation(node);
+
+    /// Right Right Case
+    if (balance < -1 && key > node->right->key)
+        return left_rotation(node);
+    /// Left Right Case
+    if (balance > 1 && key > node->left->key) {
+        node->left = left_rotation(node->left);
+        return right_rotation(node);
+    }
+
+    /// Right Left Case
+    if (balance < -1 && key < node->right->key) {
+        node->right = right_rotation(node->right);
+        return left_rotation(node);
+    }
+    return node;
+}
+
+
+void get_next(Node *root, const int &val, int &next) {
+    Node *temp = root;
+    if (temp->key == val) {
+        next = temp->key;
+        return ;
+    }
+
+    while (true) {
+        if (temp == nullptr)
+            break ;
+        if (temp->key > val) {
+            next = std::min(temp->key, next);
+            temp = temp->left;
+            continue ;
+        }
+
+        if (temp->key < val) {
+            temp = temp->right;
+            continue ;
+        }
+
+        next = temp->key;
+        break ;
+    }
+}
+
+void driver_code() {
+    int num_of_inputs;
+    int val;
+    char operation;
+    int counter = 0;
+    int pre_op_val = 0;    /// this value we will add to the add operation in case it had a next before it
+    Node *root = nullptr;
+
+    std::cin >> num_of_inputs;
+
+    while (counter < num_of_inputs) {
+        std::cin >> operation >> val;
+
+        if (root == nullptr && operation == '?') {
+            std::cout << -1 << std::endl;
+            pre_op_val = -1;
+            ++counter;
+            continue ;
+        }
+
+        if (operation == '+') {
+            int temp = counter;
+            int k = (val) + (pre_op_val);
+            root = add(root, k % 1000000000, counter);
+            pre_op_val = 0;
+
+            if (temp != counter) {    /// we are changing counter inside the add function in the case when the integer
+                continue;             /// already exists
+            }
+
+        } else {
+
+            int next = INT32_MAX;
+            get_next(root, val, next);
+            if (next > 1000000000) {
+                std::cout << -1 << std::endl;
+                pre_op_val = -1;
+            } else {
+                pre_op_val = next;
+                std::cout << next << std::endl;
+            }
+        }
+        ++counter;
+    }
+}
+
+
+int main() {
+    driver_code();
+    return 0;
+}
