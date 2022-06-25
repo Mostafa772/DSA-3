@@ -1,4 +1,4 @@
-task-submission: https://contest.yandex.ru/contest/38500/run-report/69186838
+///task-submission: https://contest.yandex.ru/contest/38500/run-report/69186838
 #include <iostream>
 #include <map>
 #include <vector>
