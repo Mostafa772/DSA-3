@@ -1,0 +1,143 @@
+/// task-submission: https://contest.yandex.ru/contest/38500/run-report/69186838
+#include <iostream>
+#include <map>
+#include <vector>
+
+template<typename ElementType, typename Compare = std::less<ElementType>>
+class Heap {
+public:
+    void Print(Heap heap) {
+        for (int i = 0; i < (int) heap_.size(); i++) {
+            std::cout << heap_.at(i) << " ";
+        }
+        std::cout << std::endl;
+    }
+    explicit Heap(Compare comp = Compare()) : comp_{comp} {
+    }
+
+    ssize_t Insert(const ElementType &element, size_t& size) {
+
+        if (size == heap_.size()) {
+            return -1;
+        }
+        heap_.push_back(element);
+        return SiftUp(heap_.size() - 1);
+    }
+
+    bool empty() {
+            return heap_.empty();
+    }
+
+    ElementType RemoveMax(int& index) {
+        ElementType max = heap_.at(0);
+        heap_[0] = heap_.at(heap_.size() - 1);
+        heap_.pop_back();
+        if(heap_.empty())
+            index = 0;
+        else
+            index = SiftDown(0);
+        return max;
+    }
+
+
+private:
+    size_t SiftUp(size_t index) {
+        if (heap_.size() == 1) {
+            return 1;
+        }
+
+        while (index != 0 && (heap_.at(index) > heap_.at((index + 1) / 2 - 1))) {
+            std::swap(heap_.at(index), heap_[GetParent(index)]);
+            index = GetParent(index);
+        }
+
+        return index + 1;
+    }
+
+    size_t SiftDown(size_t index = 0) {
+        while (HasLeftChild(index)) {
+            size_t left = GetLeftChild(index);
+            size_t j = left;
+
+            if (HasRightChild(index)) {
+                size_t right = GetRightChild(index);
+                if (right < heap_.size() && heap_.at(right) > heap_.at(left)) {
+                    j = right;
+                }
+            }
+
+            if (heap_.at(index) >= heap_.at(j)) {
+                break;
+            }
+
+            std::swap(heap_.at(index), heap_.at(j));
+            index = j;
+        }
+        return index + 1;
+    }
+
+    size_t GetLeftChild(size_t index) const {
+        return 2 * index + 1;
+    }
+
+    size_t GetRightChild(size_t index) const {
+        return 2 * index + 2;
+    }
+
+    size_t GetParent(size_t index) const {
+        return (index + 1) / 2 - 1;
+    }
+
+    bool HasLeftChild(size_t index) const {
+        return 2 * index + 1 < heap_.size();
+    }
+
+    bool HasRightChild(size_t index) const {
+        return 2 * index + 2 < heap_.size();
+    }
+
+private:
+    std::vector<ElementType> heap_;
+    Compare comp_;
+};
+
+void driver_code(Heap<int> &heap) {
+    size_t commands_num;
+    size_t max_size;
+    std::cin >> max_size >> commands_num;
+
+    while (commands_num > 0) {
+
+        short command;
+        std::cin >> command;
+
+        if (command == 2) {
+
+            int element = 0;
+            std::cin >> element;
+            std::cout << heap.Insert(element, max_size) << std::endl;
+
+        } else if (command == 1) {
+
+            int index = -1;
+            if (heap.empty()) {
+                std::cout << index << std::endl;
+            } else {
+                int max = heap.RemoveMax(index);
+                std::cout << index << " " << max << std::endl;
+            }
+
+        } else {
+            heap.Print(heap);
+        }
+        --commands_num;
+    }
+    heap.Print(heap);
+}
+
+int main() {
+    Heap<int> hr;
+    driver_code(hr);
+    return 0;
+}
+
