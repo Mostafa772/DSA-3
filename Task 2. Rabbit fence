@@ -1,0 +1,98 @@
+/// task submission: https://contest.yandex.ru/contest/38500/run-report/69187344
+#include <algorithm>
+#include <cmath>
+#include <iomanip>
+#include <iostream>
+#include <vector>
+
+std::pair<double, double> reference;
+
+double distance(const std::pair<double, double> &a, const std::pair<double, double> &b) {
+    return sqrt(pow(a.first - b.first, 2) + pow(a.second - b.second, 2));
+}
+
+double clock_wise(const std::pair<double, double> &b, const std::pair<double, double> &c, const std::pair<double, double> &a) {
+    return (c.first - b.first) * (a.second - c.second) -
+           (c.second - b.second) * (a.first - c.first);
+}
+
+int compare(const std::pair<double, double> &b, const std::pair<double, double> &c) {
+    double val = clock_wise(reference, b, c);
+    if (val == 0) {
+        return distance(reference, b) < distance(reference, c);
+    } else {
+        return val > 0;
+    }
+}
+
+/// get the index of the lowest point
+/// in other words the one that has the least y coordinates
+int get_input(std::vector<std::pair<double, double>> &points) {
+
+    double lowest_y = INT32_MAX;
+    double lowest_x = INT32_MAX;
+    int index = 0;
+    for (int i = 0; i < points.size(); ++i) {
+        double x, y;
+        std::cin >> x >> y;
+        if (y < lowest_y) {
+            lowest_y = y;
+            lowest_x = x;
+            index = i;
+        } else if (y == lowest_y) {
+            if (x < lowest_x) {
+                lowest_x = x;
+                index = i;
+            }
+        }
+        points[i] = std::make_pair(x, y);
+    }
+    return index;
+}
+
+void convex_hull(std::vector<std::pair<double, double>> &points, size_t index) {
+    std::vector<std::pair<double, double>> convex_hull(points.size() * 2);
+    reference = points[index];
+    std::swap(points[index], points[0]);
+    std::sort(points.begin() + 1, points.end(), compare);
+
+    int j = 0;
+    for (int i = 0; i < points.size(); ++i) {
+        while (clock_wise(convex_hull[j - 2], convex_hull[j - 1], points[i]) <= 0 && j >= 2) {
+            j--;
+        }
+        convex_hull[j] = points[i];
+        ++j;
+    }
+
+    int temp = j + 1;
+    for (int i = points.size() - 1; i > 0; --i) {
+        while (clock_wise(convex_hull[j - 2], convex_hull[j - 1], points[i - 1]) <= 0 && j >= temp)
+            j--;
+        convex_hull[j] = points[i - 1];
+        ++j;
+    }
+    convex_hull.resize(j - 1);
+
+    double fence_length;
+    int i = 0;
+    for (; i < convex_hull.size() - 1; ++i) {
+        fence_length += distance(convex_hull[i], convex_hull[i + 1]);
+    }
+    fence_length += distance(convex_hull[i], reference);
+    std::cout << std::fixed << std::setprecision(9);
+    std::cout << fence_length << std::endl;
+}
+
+int main() {
+
+    int input_size = 0;
+    std::cin >> input_size;
+
+    std::vector<std::pair<double, double>> points(input_size);
+    size_t smallest_y_index = get_input(points);
+
+    convex_hull(points, smallest_y_index);
+
+    return 0;
+}
